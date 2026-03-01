@@ -64,9 +64,6 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.59.2")
     ksp("com.google.dagger:hilt-android-compiler:2.59.2")
 
-    implementation(libs.vico.compose)
-    implementation(libs.vico.compose.m3)
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
