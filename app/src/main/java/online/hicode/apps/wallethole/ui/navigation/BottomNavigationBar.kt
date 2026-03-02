@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.History
@@ -67,7 +68,7 @@ fun BottomNavigationBar(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .background(Color(0xFF2A8A2E), CircleShape)
+                    .background(Color(0xFF2A8A2E), RoundedCornerShape(12.dp))
                     .clickable { onAddClick() },
                 contentAlignment = Alignment.Center
             ) {

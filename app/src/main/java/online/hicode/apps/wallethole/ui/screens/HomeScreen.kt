@@ -86,7 +86,8 @@ fun DayStatisticsCard(dayStatistics: DayStatistics) {
             .fillMaxWidth()
             .height(120.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -113,7 +114,7 @@ fun DayStatisticsCard(dayStatistics: DayStatistics) {
             // 支出金额
             StatItem(
                 label = "当日支出金额",
-                value = "${dayStatistics.total}",
+                value = "￥${dayStatistics.total}",
                 valueColor = Color(0xFF2E7D32)
             )
         }
