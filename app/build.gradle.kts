@@ -42,7 +42,7 @@ android {
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
-}12
+}
 
 dependencies {
     implementation(libs.androidx.core.ktx)

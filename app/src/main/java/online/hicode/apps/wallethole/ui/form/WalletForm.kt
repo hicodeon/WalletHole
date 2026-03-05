@@ -1,46 +1,47 @@
 package online.hicode.apps.wallethole.ui.form
 
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import online.hicode.apps.wallethole.ui.theme.WalletHoleTheme
 import online.hicode.apps.wallethole.utils.isCorrectAmount
 import java.time.Instant
@@ -55,9 +56,9 @@ fun WalletAddForm(
     onSave: (account: Double, date: String, remark: String) -> Unit,
     onSaveCallback: () -> Unit
 ) {
-    val amount = remember { mutableStateOf("0") }
+    val amount = remember { mutableStateOf("") }
     val date = remember { mutableStateOf(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))) }
-    val remark = remember { mutableStateOf("资金用途") }
+    val remark = remember { mutableStateOf("") }
     val showDatePicker = remember { mutableStateOf(false) }
     val showErrorAlert = remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
@@ -66,142 +67,180 @@ fun WalletAddForm(
             .toInstant()
             .toEpochMilli()
     )
-    val scrollState = rememberScrollState()
-    Column(
-        modifier = Modifier.fillMaxSize().padding(12.dp) .verticalScroll(scrollState)
-    ) {
 
-        // 金额输入框
-        OutlinedTextField(
-            value = amount.value,
-            onValueChange = { amount.value = it },
-            placeholder = { Text("0") },
-            label = { Text("支出金额") },
+    val tags = listOf("餐饮", "交通", "购物", "娱乐", "医疗", "教育", "居住", "通讯", "其他")
+    val selectedTagIndex = remember { mutableIntStateOf(-1) }
+    val tagScrollState: ScrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // 顶部区域：金额显示和日期选择
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            ),
-            leadingIcon = {
-                Text(
-                    text = "¥",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color(0xFF2E7D32)
-                )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF2E7D32),      // 获得焦点时边框颜色
-                unfocusedBorderColor = Color(0xFF2E7D32),    // 失去焦点时边框颜色
-                cursorColor = Color(0xFF2E7D32),             // 光标颜色
-                focusedLabelColor = Color(0xFF2E7D32),       // 获得焦点时标签颜色
-                unfocusedLabelColor = Color(0xFF2E7D32)      // 失去焦点时标签颜色
-            )
-        )
-
-        // 日期选择
-        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // 金额显示区域
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF2E7D32), RoundedCornerShape(16.dp))
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Row(modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = date.value,
-                        onValueChange = {},
-                        label = { Text("日期") },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true,
-                        readOnly = true,
-                        enabled = true,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = "选择日期",
-                                tint = Color(0xFF2E7D32)
-                            )
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF2E7D32),      // 获得焦点时边框颜色
-                            unfocusedBorderColor = Color(0xFF2E7D32),    // 失去焦点时边框颜色
-                            cursorColor = Color(0xFF2E7D32),             // 光标颜色
-                            focusedLabelColor = Color(0xFF2E7D32),       // 获得焦点时标签颜色
-                            unfocusedLabelColor = Color(0xFF2E7D32)      // 失去焦点时标签颜色
-                        ),
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Button(
-                    onClick = {
-                        showDatePicker.value = true
-                    },
-                    modifier = Modifier.width(90.dp).height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(vertical = 12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2E7D32),  // 深绿色
-                        contentColor = Color.White
-                    )
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        text = "选择",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = "¥ ${amount.value.ifEmpty { "0.00" }}",
+                        fontSize = 28.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Left
                     )
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = date.value,
+                            fontSize = 12.sp,
+                            color = Color.White.copy(alpha = 0.9f),
+                            textAlign = TextAlign.Center
+                        )
+                        IconButton(
+                            onClick = { showDatePicker.value = true },
+                            modifier = Modifier
+                                .size(18.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "编辑日期",
+                                tint = Color.White,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                    }
                 }
             }
-        }
 
+            // 日期选择
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.SpaceBetween
+//            ) {
+//                OutlinedTextField(
+//                    value = date.value,
+//                    onValueChange = {},
+//                    label = { Text("日期") },
+//                    modifier = Modifier.weight(1f),
+//                    shape = RoundedCornerShape(12.dp),
+//                    singleLine = true,
+//                    readOnly = true,
+//                    enabled = true,
+//                    leadingIcon = {
+//                        Icon(
+//                            imageVector = Icons.Default.Create,
+//                            contentDescription = "选择日期",
+//                            tint = Color(0xFF2E7D32)
+//                        )
+//                    },
+//                    colors = OutlinedTextFieldDefaults.colors(
+//                        focusedBorderColor = Color(0xFF2E7D32),
+//                        unfocusedBorderColor = Color(0xFF2E7D32),
+//                        cursorColor = Color(0xFF2E7D32),
+//                        focusedLabelColor = Color(0xFF2E7D32),
+//                        unfocusedLabelColor = Color(0xFF2E7D32)
+//                    ),
+//                )
+//                Spacer(modifier = Modifier.width(12.dp))
+//                Button(
+//                    onClick = { showDatePicker.value = true },
+//                    modifier = Modifier.width(90.dp).height(52.dp),
+//                    shape = RoundedCornerShape(12.dp),
+//                    contentPadding = PaddingValues(vertical = 12.dp),
+//                    colors = ButtonDefaults.buttonColors(
+//                        containerColor = Color(0xFF2E7D32),
+//                        contentColor = Color.White
+//                    )
+//                ) {
+//                    Text(text = "选择")
+//                }
+//            }
 
-        // 说明输入框
-        OutlinedTextField(
-            value = remark.value,
-            onValueChange = { remark.value = it },
-            label = { Text("说明") },
-            placeholder = { Text("资金用途") },
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp, top = 8.dp),
-            minLines = 2,
-            maxLines = 2,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF2E7D32),      // 获得焦点时边框颜色
-                unfocusedBorderColor = Color(0xFF2E7D32),    // 失去焦点时边框颜色
-                cursorColor = Color(0xFF2E7D32),             // 光标颜色
-                focusedLabelColor = Color(0xFF2E7D32),       // 获得焦点时标签颜色
-                unfocusedLabelColor = Color(0xFF2E7D32)      // 失去焦点时标签颜色
-            )
-        )
-
-        // 保存按钮
-        Button(
-            onClick = {
-                if (isCorrectAmount(amount.value)) {
-                    onSave(amount.value.toDouble(), date.value, remark.value)
-                    amount.value = ""
-                    date.value = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                    remark.value = ""
-                } else {
-                    // 提示金额输入问题
-                    showErrorAlert.value = true
+            // 标签选择 - 可左右滚动
+            Column {
+//                Text(
+//                    text = "支出标签",
+//                    fontSize = 14.sp,
+//                    color = Color.Gray,
+//                    modifier = Modifier.padding(bottom = 8.dp)
+//                )
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(tags.size) { index ->
+                        TagChip(
+                            tag = tags[index],
+                            isSelected = selectedTagIndex.intValue == index,
+                            onClick = {
+                                selectedTagIndex.intValue = index
+                                remark.value = tags[index]
+                            }
+                        )
+                    }
                 }
-            },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            shape = RoundedCornerShape(12.dp),
-            contentPadding = PaddingValues(vertical = 12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF2E7D32),  // 深绿色
-                contentColor = Color.White
-            )
-        ) {
-            Text(
-                text = "保存",
-                style = MaterialTheme.typography.titleMedium,
+            }
+
+            // 说明输入框
+//            OutlinedTextField(
+//                value = remark.value,
+//                onValueChange = { remark.value = it },
+//                label = { Text("说明") },
+//                placeholder = { Text("资金用途") },
+//                shape = RoundedCornerShape(12.dp),
+//                modifier = Modifier.fillMaxWidth(),
+//                minLines = 2,
+//                maxLines = 2,
+//                colors = OutlinedTextFieldDefaults.colors(
+//                    focusedBorderColor = Color(0xFF2E7D32),
+//                    unfocusedBorderColor = Color(0xFF2E7D32),
+//                    cursorColor = Color(0xFF2E7D32),
+//                    focusedLabelColor = Color(0xFF2E7D32),
+//                    unfocusedLabelColor = Color(0xFF2E7D32)
+//                )
+//            )
+
+            // 底部数字键盘
+            NumberKeyboard(
+                onNumberClick = { digit ->
+                    if (digit == "." && amount.value.contains(".")) return@NumberKeyboard
+                    if (digit == "." && amount.value.isEmpty()) return@NumberKeyboard
+                    amount.value += digit
+                },
+                onDeleteClick = {
+                    if (amount.value.isNotEmpty()) {
+                        amount.value = amount.value.dropLast(1)
+                    }
+                },
+                onSaveClick = {
+                    if (amount.value.isNotEmpty() && isCorrectAmount(amount.value)) {
+                        onSave(amount.value.toDouble(), date.value, remark.value)
+                        amount.value = ""
+                        date.value = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        remark.value = ""
+                        selectedTagIndex.intValue = -1
+                    } else {
+                        showErrorAlert.value = true
+                    }
+                }
             )
         }
     }
@@ -269,141 +308,179 @@ fun WalletUpdateForm(
             .toEpochMilli()
     )
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(12.dp)
-    ) {
+    val tags = listOf("餐饮", "交通", "购物", "娱乐", "医疗", "教育", "居住", "通讯", "其他")
+    val selectedTagIndex = remember { mutableIntStateOf(-1) }
+    val tagScrollState: ScrollState = rememberScrollState()
 
-        // 金额输入框
-        OutlinedTextField(
-            value = amount.value,
-            onValueChange = { amount.value = it },
-            placeholder = { Text("0") },
-            label = { Text("支出金额") },
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // 顶部区域：金额显示和日期选择
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            ),
-            leadingIcon = {
-                Text(
-                    text = "¥",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color(0xFF2E7D32)
-                )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF2E7D32),      // 获得焦点时边框颜色
-                unfocusedBorderColor = Color(0xFF2E7D32),    // 失去焦点时边框颜色
-                cursorColor = Color(0xFF2E7D32),             // 光标颜色
-                focusedLabelColor = Color(0xFF2E7D32),       // 获得焦点时标签颜色
-                unfocusedLabelColor = Color(0xFF2E7D32)      // 失去焦点时标签颜色
-            )
-        )
-
-        // 日期选择
-        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // 金额显示区域
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF2E7D32), RoundedCornerShape(16.dp))
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Row(modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = date.value,
-                        onValueChange = {},
-                        label = { Text("日期") },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true,
-                        readOnly = true,
-                        enabled = true,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = "选择日期",
-                                tint = Color(0xFF2E7D32)
-                            )
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF2E7D32),      // 获得焦点时边框颜色
-                            unfocusedBorderColor = Color(0xFF2E7D32),    // 失去焦点时边框颜色
-                            cursorColor = Color(0xFF2E7D32),             // 光标颜色
-                            focusedLabelColor = Color(0xFF2E7D32),       // 获得焦点时标签颜色
-                            unfocusedLabelColor = Color(0xFF2E7D32)      // 失去焦点时标签颜色
-                        ),
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Button(
-                    onClick = {
-                        showDatePicker.value = true
-                    },
-                    modifier = Modifier.width(90.dp).height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(vertical = 12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2E7D32),  // 深绿色
-                        contentColor = Color.White
-                    )
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        text = "选择",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = "¥ ${amount.value.ifEmpty { "0.00" }}",
+                        fontSize = 28.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Left
                     )
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = date.value,
+                            fontSize = 12.sp,
+                            color = Color.White.copy(alpha = 0.9f),
+                            textAlign = TextAlign.Center
+                        )
+                        IconButton(
+                            onClick = { showDatePicker.value = true },
+                            modifier = Modifier
+                                .size(18.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "编辑日期",
+                                tint = Color.White,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                    }
                 }
             }
-        }
 
-        // 说明输入框
-        OutlinedTextField(
-            value = remark.value,
-            onValueChange = { remark.value = it },
-            label = { Text("说明") },
-            placeholder = { Text("资金用途") },
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp, top = 8.dp),
-            minLines = 2,
-            maxLines = 2,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF2E7D32),      // 获得焦点时边框颜色
-                unfocusedBorderColor = Color(0xFF2E7D32),    // 失去焦点时边框颜色
-                cursorColor = Color(0xFF2E7D32),             // 光标颜色
-                focusedLabelColor = Color(0xFF2E7D32),       // 获得焦点时标签颜色
-                unfocusedLabelColor = Color(0xFF2E7D32)      // 失去焦点时标签颜色
-            )
-        )
+            // 日期选择
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.SpaceBetween
+//            ) {
+//                OutlinedTextField(
+//                    value = date.value,
+//                    onValueChange = {},
+//                    label = { Text("日期") },
+//                    modifier = Modifier.weight(1f),
+//                    shape = RoundedCornerShape(12.dp),
+//                    singleLine = true,
+//                    readOnly = true,
+//                    enabled = true,
+//                    leadingIcon = {
+//                        Icon(
+//                            imageVector = Icons.Default.Create,
+//                            contentDescription = "选择日期",
+//                            tint = Color(0xFF2E7D32)
+//                        )
+//                    },
+//                    colors = OutlinedTextFieldDefaults.colors(
+//                        focusedBorderColor = Color(0xFF2E7D32),
+//                        unfocusedBorderColor = Color(0xFF2E7D32),
+//                        cursorColor = Color(0xFF2E7D32),
+//                        focusedLabelColor = Color(0xFF2E7D32),
+//                        unfocusedLabelColor = Color(0xFF2E7D32)
+//                    ),
+//                )
+//                Spacer(modifier = Modifier.width(12.dp))
+//                Button(
+//                    onClick = { showDatePicker.value = true },
+//                    modifier = Modifier.width(90.dp).height(52.dp),
+//                    shape = RoundedCornerShape(12.dp),
+//                    contentPadding = PaddingValues(vertical = 12.dp),
+//                    colors = ButtonDefaults.buttonColors(
+//                        containerColor = Color(0xFF2E7D32),
+//                        contentColor = Color.White
+//                    )
+//                ) {
+//                    Text(text = "选择")
+//                }
+//            }
 
-        // 保存按钮
-        Button(
-            onClick = {
-                if (isCorrectAmount(amount.value)) {
-                    onSave(walletId, amount.value.toDouble(), date.value, remark.value)
-                    onSaveCallback()
-                    amount.value = ""
-                    date.value = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                    remark.value = ""
-                } else {
-                    // 提示金额输入问题
-                    showErrorAlert.value = true
+            // 标签选择 - 可左右滚动
+            Column {
+//                Text(
+//                    text = "支出标签",
+//                    fontSize = 14.sp,
+//                    color = Color.Gray,
+//                    modifier = Modifier.padding(bottom = 8.dp)
+//                )
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(tags.size) { index ->
+                        TagChip(
+                            tag = tags[index],
+                            isSelected = selectedTagIndex.intValue == index,
+                            onClick = {
+                                selectedTagIndex.intValue = index
+                                remark.value = tags[index]
+                            }
+                        )
+                    }
                 }
-            },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            shape = RoundedCornerShape(12.dp),
-            contentPadding = PaddingValues(vertical = 12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF2E7D32),  // 深绿色
-                contentColor = Color.White
-            )
-        ) {
-            Text(
-                text = "修改",
-                style = MaterialTheme.typography.titleMedium,
+            }
+
+            // 说明输入框
+//            OutlinedTextField(
+//                value = remark.value,
+//                onValueChange = { remark.value = it },
+//                label = { Text("说明") },
+//                placeholder = { Text("资金用途") },
+//                shape = RoundedCornerShape(12.dp),
+//                modifier = Modifier.fillMaxWidth(),
+//                minLines = 2,
+//                maxLines = 2,
+//                colors = OutlinedTextFieldDefaults.colors(
+//                    focusedBorderColor = Color(0xFF2E7D32),
+//                    unfocusedBorderColor = Color(0xFF2E7D32),
+//                    cursorColor = Color(0xFF2E7D32),
+//                    focusedLabelColor = Color(0xFF2E7D32),
+//                    unfocusedLabelColor = Color(0xFF2E7D32)
+//                )
+//            )
+
+            // 底部数字键盘
+            NumberKeyboard(
+                onNumberClick = { digit ->
+                    if (digit == "." && amount.value.contains(".")) return@NumberKeyboard
+                    if (digit == "." && amount.value.isEmpty()) return@NumberKeyboard
+                    amount.value += digit
+                },
+                onDeleteClick = {
+                    if (amount.value.isNotEmpty()) {
+                        amount.value = amount.value.dropLast(1)
+                    }
+                },
+                onSaveClick = {
+                    if (amount.value.isNotEmpty() && isCorrectAmount(amount.value)) {
+                        onSave(walletId, amount.value.toDouble(), date.value, remark.value)
+                        amount.value = ""
+                        date.value = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        remark.value = ""
+                        selectedTagIndex.intValue = -1
+                    } else {
+                        showErrorAlert.value = true
+                    }
+                }
             )
         }
     }
@@ -448,11 +525,203 @@ fun WalletUpdateForm(
     }
 }
 
+@Composable
+private fun TagChip(
+    tag: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(vertical = 3.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = if (isSelected) Color(0xFF2E7D32) else Color(0xFFE8F5E9),
+        tonalElevation = 4.dp
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 8.dp, vertical = 3.dp)
+        ) {
+            Text(
+                text = tag,
+                color = if (isSelected) Color.White else Color(0xFF2E7D32),
+                fontSize = 12.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun NumberKeyboard(
+    onNumberClick: (String) -> Unit,
+    onDeleteClick: () -> Unit,
+    onSaveClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFFF5F5F5))
+    ) {
+        // 第一行：7 8 9 删除
+        // 第二行：4 5 6 保存
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(3f)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton("7", onNumberClick)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton("8", onNumberClick)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton("9", onNumberClick)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton("4", onNumberClick)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton("5", onNumberClick)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton("6", onNumberClick)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton("1", onNumberClick)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton("2", onNumberClick)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton("3", onNumberClick)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton(".", onNumberClick)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardButton("0", onNumberClick, wide = true)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        KeyboardActionButton("⌫", Color(0xFFFFB74D), onActionClick = onDeleteClick)
+                    }
+                }
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                KeyboardSaveActionButton("保存", Color(0xFF2E7D32), onActionClick = onSaveClick)
+            }
+
+        }
+
+    }
+}
+
+@Composable
+private fun KeyboardButton(
+    text: String,
+    onClick: (String) -> Unit,
+    wide: Boolean = false
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .clickable { onClick(text) },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            fontSize = 24.sp,
+            color = Color(0xFF2E7D32),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun KeyboardActionButton(
+    text: String,
+    backgroundColor: Color,
+    onActionClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor)
+            .clickable { onActionClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            fontSize = 20.sp,
+            color = Color.White,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun KeyboardSaveActionButton(
+    text: String,
+    backgroundColor: Color,
+    onActionClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(184.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor)
+            .clickable { onActionClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            fontSize = 20.sp,
+            color = Color.White,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
 
 @Preview
 @Composable
 fun WalletFormAddPreview() {
+
     WalletHoleTheme {
         WalletAddForm(onSave = { _, _, _ -> }, onSaveCallback = {}  )
     }
+
 }
