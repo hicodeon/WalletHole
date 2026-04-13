@@ -86,8 +86,7 @@ fun DayStatisticsCard(dayStatistics: DayStatistics) {
             .fillMaxWidth()
             .height(120.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
             modifier = Modifier

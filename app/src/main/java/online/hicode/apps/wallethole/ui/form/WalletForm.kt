@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -28,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
@@ -68,9 +70,12 @@ fun WalletAddForm(
             .toEpochMilli()
     )
 
-    val tags = listOf("餐饮", "交通", "购物", "娱乐", "医疗", "教育", "居住", "通讯", "其他")
+    val tags = remember { mutableStateOf(listOf("超市", "外卖", "水费", "电费", "燃气费", "交通", "话费", "水果", "零食", "服饰", "其它")) }
     val selectedTagIndex = remember { mutableIntStateOf(-1) }
     val tagScrollState: ScrollState = rememberScrollState()
+
+    val customTagInput = remember { mutableStateOf("") }
+    val showCustomTagDialog = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -183,20 +188,34 @@ fun WalletAddForm(
 //                    color = Color.Gray,
 //                    modifier = Modifier.padding(bottom = 8.dp)
 //                )
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(tags.size) { index ->
-                        TagChip(
-                            tag = tags[index],
-                            isSelected = selectedTagIndex.intValue == index,
-                            onClick = {
-                                selectedTagIndex.intValue = index
-                                remark.value = tags[index]
-                            }
-                        )
+                    LazyRow(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(tags.value.size) { index ->
+                            TagChip(
+                                tag = tags.value[index],
+                                isSelected = selectedTagIndex.intValue == index,
+                                onClick = {
+                                    selectedTagIndex.intValue = index
+                                    remark.value = tags.value[index]
+                                }
+                            )
+                        }
                     }
+                    // 编辑按钮，固定在末尾
+                    TagChip(
+                        tag = "+",  // 或使用图标
+                        isSelected = false,
+                        onClick = { showCustomTagDialog.value = true },
+                        isEditButton = true
+                    )
                 }
+
             }
 
             // 说明输入框
@@ -283,6 +302,41 @@ fun WalletAddForm(
             }
         )
     }
+
+    if (showCustomTagDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showCustomTagDialog.value = false },
+            title = { Text("添加自定义标签") },
+            text = {
+                TextField(
+                    value = customTagInput.value,
+                    onValueChange = { customTagInput.value = it },
+                    label = { Text("输入标签") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (customTagInput.value.isNotBlank() && !tags.value.contains(customTagInput.value)) {
+                        // 注意：tags 仍为 listOf，需要改为 mutableStateOf<List<String>>
+                        // 假设您已改为 val tags = remember { mutableStateOf(listOf("超市", ...)) }
+                        tags.value = listOf(customTagInput.value) + tags.value
+                        selectedTagIndex.intValue = 0
+                        remark.value = customTagInput.value
+                        customTagInput.value = ""
+                    }
+                    showCustomTagDialog.value = false
+                }) {
+                    Text("确认")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showCustomTagDialog.value = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 }
 
 
@@ -308,9 +362,11 @@ fun WalletUpdateForm(
             .toEpochMilli()
     )
 
-    val tags = listOf("餐饮", "交通", "购物", "娱乐", "医疗", "教育", "居住", "通讯", "其他")
+    val tags = remember { mutableStateOf(listOf("餐饮", "交通", "购物", "娱乐", "医疗", "教育", "居住", "通讯", "其他"))}
     val selectedTagIndex = remember { mutableIntStateOf(-1) }
     val tagScrollState: ScrollState = rememberScrollState()
+    val customTagInput = remember { mutableStateOf("") }
+    val showCustomTagDialog = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -423,19 +479,32 @@ fun WalletUpdateForm(
 //                    color = Color.Gray,
 //                    modifier = Modifier.padding(bottom = 8.dp)
 //                )
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(tags.size) { index ->
-                        TagChip(
-                            tag = tags[index],
-                            isSelected = selectedTagIndex.intValue == index,
-                            onClick = {
-                                selectedTagIndex.intValue = index
-                                remark.value = tags[index]
-                            }
-                        )
+                    LazyRow(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(tags.value.size) { index ->
+                            TagChip(
+                                tag = tags.value[index],
+                                isSelected = selectedTagIndex.intValue == index,
+                                onClick = {
+                                    selectedTagIndex.intValue = index
+                                    remark.value = tags.value[index]
+                                }
+                            )
+                        }
                     }
+                    // 编辑按钮，固定在末尾
+                    TagChip(
+                        tag = "+",  // 或使用图标
+                        isSelected = false,
+                        onClick = { showCustomTagDialog.value = true },
+                        isEditButton = true
+                    )
                 }
             }
 
@@ -523,13 +592,50 @@ fun WalletUpdateForm(
             }
         )
     }
+
+    // 在 WalletAddForm 的末尾，添加对话框（如果尚未添加）
+    if (showCustomTagDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showCustomTagDialog.value = false },
+            title = { Text("添加自定义标签") },
+            text = {
+                TextField(
+                    value = customTagInput.value,
+                    onValueChange = { customTagInput.value = it },
+                    label = { Text("输入标签") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (customTagInput.value.isNotBlank() && !tags.value.contains(customTagInput.value)) {
+                        // 注意：tags 仍为 listOf，需要改为 mutableStateOf<List<String>>
+                        // 假设您已改为 val tags = remember { mutableStateOf(listOf("超市", ...)) }
+                        tags.value = listOf(customTagInput.value) + tags.value
+                        selectedTagIndex.intValue = 0
+                        remark.value = customTagInput.value
+                        customTagInput.value = ""
+                    }
+                    showCustomTagDialog.value = false
+                }) {
+                    Text("确认")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showCustomTagDialog.value = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 }
 
 @Composable
 private fun TagChip(
     tag: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isEditButton: Boolean = false
 ) {
     Surface(
         modifier = Modifier
@@ -543,11 +649,20 @@ private fun TagChip(
             modifier = Modifier
                 .padding(horizontal = 8.dp, vertical = 3.dp)
         ) {
-            Text(
-                text = tag,
-                color = if (isSelected) Color.White else Color(0xFF2E7D32),
-                fontSize = 12.sp
-            )
+            if (isEditButton) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "添加自定义标签",
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+            } else {
+                Text(
+                    text = tag,
+                    color = if (isSelected) Color.White else Color(0xFF2E7D32),
+                    fontSize = 12.sp
+                )
+            }
         }
     }
 }
