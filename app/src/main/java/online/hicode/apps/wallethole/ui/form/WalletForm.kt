@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -70,7 +71,7 @@ fun WalletAddForm(
             .toEpochMilli()
     )
 
-    val tags = remember { mutableStateOf(listOf("超市", "外卖", "水费", "电费", "燃气费", "交通", "话费", "水果", "零食", "服饰", "其它")) }
+    val tags = remember { mutableStateOf(listOf("超市", "外卖", "水果", "零食", "交通", "服饰", "水费", "电费", "燃气费", "话费", "其它")) }
     val selectedTagIndex = remember { mutableIntStateOf(-1) }
     val tagScrollState: ScrollState = rememberScrollState()
 
@@ -209,8 +210,8 @@ fun WalletAddForm(
                     }
                     // 编辑按钮，固定在末尾
                     TagChip(
-                        tag = "+",  // 或使用图标
-                        isSelected = false,
+                        tag = "自定义",  // 或使用图标
+                        isSelected = true,
                         onClick = { showCustomTagDialog.value = true },
                         isEditButton = true
                     )
@@ -362,11 +363,20 @@ fun WalletUpdateForm(
             .toEpochMilli()
     )
 
-    val tags = remember { mutableStateOf(listOf("餐饮", "交通", "购物", "娱乐", "医疗", "教育", "居住", "通讯", "其他"))}
+    val tags = remember { mutableStateOf(listOf("超市", "外卖", "水果", "零食", "交通", "服饰", "水费", "电费", "燃气费", "话费", "其它"))}
     val selectedTagIndex = remember { mutableIntStateOf(-1) }
     val tagScrollState: ScrollState = rememberScrollState()
     val customTagInput = remember { mutableStateOf("") }
     val showCustomTagDialog = remember { mutableStateOf(false) }
+
+    val index = tags.value.indexOf(remark.value)
+    if (index >= 0) {
+        selectedTagIndex.intValue = index
+    } else if (remark.value.isNotBlank()) {
+        // 如果不在且不为空，添加到列表前面并选中
+        tags.value = listOf(remark.value) + tags.value
+        selectedTagIndex.intValue = 0
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -500,8 +510,8 @@ fun WalletUpdateForm(
                     }
                     // 编辑按钮，固定在末尾
                     TagChip(
-                        tag = "+",  // 或使用图标
-                        isSelected = false,
+                        tag = "自定义",  // 或使用图标
+                        isSelected = true,
                         onClick = { showCustomTagDialog.value = true },
                         isEditButton = true
                     )
@@ -654,7 +664,7 @@ private fun TagChip(
                     imageVector = Icons.Default.Add,
                     contentDescription = "添加自定义标签",
                     tint = Color.White,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             } else {
                 Text(

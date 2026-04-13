@@ -47,6 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import online.hicode.apps.wallethole.data.database.AppDatabase
 import online.hicode.apps.wallethole.data.vo.DayStatistics
 import online.hicode.apps.wallethole.data.vo.MonthTrend
+import online.hicode.apps.wallethole.utils.formatAmount
 import online.hicode.apps.wallethole.viewModel.HomeViewModel
 import online.hicode.apps.wallethole.viewModel.HomeViewModelFactory
 
@@ -113,7 +114,7 @@ fun DayStatisticsCard(dayStatistics: DayStatistics) {
             // 支出金额
             StatItem(
                 label = "当日支出金额",
-                value = "￥${dayStatistics.total}",
+                value = "￥${formatAmount(dayStatistics.total)}",
                 valueColor = Color(0xFF2E7D32)
             )
         }
